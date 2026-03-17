@@ -179,13 +179,13 @@ public class BankSystem {
                     break;
                     
                 case 3:
-                    if (account.hasActiveLoan()) {
-                        System.out.print("The system detected that you have loans would you like to pay it now? (yes/no): ");
-                        String input = scanner.nextLine().toLowerCase();
-                        if (input.equals("yes")) {
-                            account.payloan();
-                        }
-                    }
+//                    if (account.hasActiveLoan()) {
+//                        System.out.print("The system detected that you have loans would you like to pay it now? (yes/no): ");
+//                        String input = scanner.nextLine().toLowerCase();
+//                        if (input.equals("yes")) {
+//                            account.payloan();
+//                        }
+//                    }
                     System.out.print("Enter withdrawal amount: ");
                     double withdrawAmount = scanner.nextDouble();
                     scanner.nextLine();
@@ -222,10 +222,26 @@ public class BankSystem {
                             }
                         }
                     } else {
-                        System.out.print("Enter loan amount: ");
-                        double loanAmount = scanner.nextDouble();
-                        scanner.nextLine();
-                        account.requestLoan(loanAmount);
+                        if (account.hasActiveLoan()) {
+                            System.out.println("The System Dectected you have an Existing Outstanding Loan.");
+                            System.out.println("1. Loan \n2.Pay existing loan.");
+                            int input = scanner.nextInt();
+                                if (input == 1 && account.hasActiveLoan()) {
+                                    System.out.println("You have an outstanding loan. You must pay it first before using the service again.");
+                                } else if (input == 1 && !account.hasActiveLoan()) {
+                                    System.out.print("Enter loan amount: ");
+                                    double loanAmount = scanner.nextDouble();
+                                    scanner.nextLine();
+                                    account.requestLoan(loanAmount);
+                                } else if (input == 2) {
+                                    account.payloan();
+                                }
+                        } else {
+                            System.out.print("Enter loan amount: ");
+                            double loanAmount = scanner.nextDouble();
+                            scanner.nextLine();
+                            account.requestLoan(loanAmount);
+                        }
                     }
                     break;
                     
