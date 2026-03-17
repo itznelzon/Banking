@@ -11,9 +11,9 @@ public class Bank {
     private double loanAmount;
     private double loanInterest;
     private boolean hasActiveLoan;
-    
+    private double loan;
     public Bank(String accountHolder, int age, String address, String gmail, String telephone, 
-                String accountUsername, double balance, int pin) {
+                String accountUsername, double balance, int pin, double loan) {
         this.accountHolder = accountHolder;
         this.age = age;
         this.address = address;
@@ -26,6 +26,7 @@ public class Bank {
         this.loanAmount = 0.0;
         this.loanInterest = 0.05;
         this.hasActiveLoan = false;
+        this.loan = 0.0;
     }
     
     public void checkBalance() {
@@ -55,7 +56,7 @@ public class Bank {
     }
     
     public void withdraw(double amount) {
-        if (amount > 0 && amount <= balance) {
+        if (amount > 0 && amount <= balance && !hasActiveLoan) {
             balance -= amount;
             System.out.printf("%.2f withdrawn successfully.%n", amount);
             System.out.printf("New Balance: %.2f%n", balance);
@@ -64,6 +65,17 @@ public class Bank {
         } else {
             System.out.println("Invalid withdrawal amount!");
         } 
+    }
+
+    public void payloan() {
+        if (balance < loan) {
+            System.out.print("You dont have enough credits.(yes/no): ");
+        } else {
+            balance -= loan;
+            hasActiveLoan = false;
+            loan = 0.0;
+            System.out.println("New Balance " + balance);
+        }
     }
     
     public void transferToSavings(double amount) {
@@ -134,6 +146,7 @@ public class Bank {
         loanAmount = totalLoanWithInterest;
         balance += amount;
         hasActiveLoan = true;
+        loan += totalLoanWithInterest;
         
         System.out.println("\n Loan approved!");
         System.out.printf("Loan amount: %.2f%n", amount);
