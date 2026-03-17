@@ -134,7 +134,7 @@ public class Bank {
             return;
         }
         
-        double maxLoanAmount = balance * 10;
+        double maxLoanAmount = balance * 5;
         
         if (amount > maxLoanAmount) {
             System.out.println("\n Loan request denied!");
