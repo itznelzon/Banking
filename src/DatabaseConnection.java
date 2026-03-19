@@ -21,6 +21,17 @@ public final class DatabaseConnection {
         return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
     }
 
+    public static Connection getJamesKylebankConnection() throws SQLException {
+        return getConnectionForDatabase("jameskylebank");
+    }
+
+    public static Connection getConnectionForDatabase(String databaseName) throws SQLException {
+        String resolvedName = sanitizeDatabaseName(databaseName);
+        ensureDatabaseExists(resolvedName);
+        String targetUrl = "jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + resolvedName + "?useSSL=false&serverTimezone=UTC";
+        return DriverManager.getConnection(targetUrl, DB_USER, DB_PASSWORD);
+    }
+
     public static String getDatabaseName() {
         return DB_NAME;
     }
@@ -79,10 +90,47 @@ public final class DatabaseConnection {
         }
     }
 
+    public static boolean isMySqlConnectorAvailable() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            return true;
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
+    }
+
+    public static String getMySqlConnectorVersion() {
+        try {
+            Class<?> driverClass = Class.forName("com.mysql.cj.jdbc.Driver");
+            Package pkg = driverClass.getPackage();
+            String implementationVersion = pkg == null ? null : pkg.getImplementationVersion();
+            return implementationVersion == null ? "UNKNOWN" : implementationVersion;
+        } catch (ClassNotFoundException ex) {
+            return "NOT_FOUND";
+        }
+    }
+
     private static void ensureDatabaseExists() throws SQLException {
+        ensureDatabaseExists(DB_NAME);
+    }
+
+    private static void ensureDatabaseExists(String databaseName) throws SQLException {
+        String safeName = sanitizeDatabaseName(databaseName);
         try (Connection conn = DriverManager.getConnection(SERVER_URL, DB_USER, DB_PASSWORD);
              Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS `" + DB_NAME + "`");
+            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS `" + safeName + "`");
         }
+    }
+
+    private static String sanitizeDatabaseName(String databaseName) {
+        if (databaseName == null || databaseName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Database name cannot be empty.");
+        }
+
+        String clean = databaseName.trim();
+        if (!clean.matches("[A-Za-z0-9_]+")) {
+            throw new IllegalArgumentException("Database name contains invalid characters.");
+        }
+        return clean;
     }
 }
