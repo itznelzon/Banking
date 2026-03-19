@@ -179,13 +179,6 @@ public class BankSystem {
                     break;
                     
                 case 3:
-//                    if (account.hasActiveLoan()) {
-//                        System.out.print("The system detected that you have loans would you like to pay it now? (yes/no): ");
-//                        String input = scanner.nextLine().toLowerCase();
-//                        if (input.equals("yes")) {
-//                            account.payloan();
-//                        }
-//                    }
                     System.out.print("Enter withdrawal amount: ");
                     double withdrawAmount = scanner.nextDouble();
                     scanner.nextLine();
