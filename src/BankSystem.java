@@ -3,9 +3,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class BankSystem {
-    private static final String ADMIN_USERNAME = "Admin";
-    private static final String ADMIN_PASSWORD = "P@&&Word$";
-
     private final List<Bank> allAccounts;
     private final InputValidator validator;
     private final DatabaseManager databaseManager;
@@ -98,7 +95,10 @@ public class BankSystem {
     }
 
     public boolean loginAdmin(String username, String password) {
-        return ADMIN_USERNAME.equals(username) && ADMIN_PASSWORD.equals(password);
+        if (username == null || password == null) {
+            return false;
+        }
+        return databaseManager.validateAdminCredentials(username.trim(), password);
     }
 
     public int getTotalAccounts() {

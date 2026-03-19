@@ -519,6 +519,8 @@ public class BankSwingUI extends JFrame {
             showError("Age must be a number.");
         } catch (IllegalArgumentException ex) {
             showError(ex.getMessage());
+        } catch (IllegalStateException ex) {
+            showError("Database registration failed: " + ex.getMessage());
         }
     }
 

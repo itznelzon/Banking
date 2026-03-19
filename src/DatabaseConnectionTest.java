@@ -7,6 +7,7 @@ public class DatabaseConnectionTest {
             DatabaseConnection.ensureMySqlDriverLoaded();
             try (Connection conn = DatabaseConnection.getConnection()) {
                 System.out.println("Database connected successfully: " + conn.getCatalog());
+                System.out.println("Active DB config: " + DatabaseConnection.getDatabaseName());
             }
         } catch (IllegalStateException | SQLException ex) {
             System.out.println("Database connection failed: " + ex.getMessage());

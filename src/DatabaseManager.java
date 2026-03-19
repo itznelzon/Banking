@@ -12,6 +12,27 @@ public class DatabaseManager {
         ensureSchema();
     }
 
+    public boolean validateAdminCredentials(String username, String password) {
+        String sql = "SELECT COUNT(*) FROM admins WHERE username = ? AND password = ?";
+
+        try (Connection conn = openConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+
+            return false;
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Cannot validate admin credentials in MySQL. " + ex.getMessage(), ex);
+        }
+    }
+
     public List<Bank> loadAccounts() {
         List<Bank> accounts = new ArrayList<>();
         String sql = "SELECT id, account_holder, age, address, gmail, telephone, username, pin, checking_balance, savings_balance, loan_amount FROM accounts ORDER BY id";
@@ -106,7 +127,7 @@ public class DatabaseManager {
     }
 
     private void ensureSchema() {
-        String createTableSql =
+        String createAccountsTableSql =
             "CREATE TABLE IF NOT EXISTS accounts (" +
             "id INT AUTO_INCREMENT PRIMARY KEY," +
             "account_holder VARCHAR(120) NOT NULL," +
@@ -121,10 +142,27 @@ public class DatabaseManager {
             "loan_amount DOUBLE NOT NULL DEFAULT 0" +
             ")";
 
+        String createAdminsTableSql =
+            "CREATE TABLE IF NOT EXISTS admins (" +
+            "id INT AUTO_INCREMENT PRIMARY KEY," +
+            "username VARCHAR(80) NOT NULL UNIQUE," +
+            "password VARCHAR(120) NOT NULL" +
+            ")";
+
+        String seedAdminSql =
+            "INSERT INTO admins (username, password) VALUES ('Admin', 'P@&&Word$') " +
+            "ON DUPLICATE KEY UPDATE username = username";
+
         try (Connection conn = openConnection(); Statement stmt = conn.createStatement()) {
-            stmt.execute(createTableSql);
+            stmt.execute(createAccountsTableSql);
+            stmt.execute(createAdminsTableSql);
+            stmt.execute(seedAdminSql);
         } catch (SQLException ex) {
-            throw new IllegalStateException("Unable to initialize MySQL schema. Check if XAMPP MySQL is running and database 'jameskylebank' exists. " + ex.getMessage(), ex);
+            throw new IllegalStateException(
+                "Unable to initialize MySQL schema. Check if XAMPP MySQL is running and database '"
+                    + DatabaseConnection.getDatabaseName() + "' exists. " + ex.getMessage(),
+                ex
+            );
         }
     }
 
