@@ -22,7 +22,7 @@ public class BankSystem {
             throw new IllegalArgumentException("Username is already taken. Choose another one.");
         }
 
-        int pin = Integer.parseInt(pinText);
+        String hashedPin = PasswordUtil.hashPassword(pinText);
         Bank account = new Bank(
             accountHolder.trim(),
             age,
@@ -31,7 +31,7 @@ public class BankSystem {
             telephone,
             accountUsername.trim(),
             0.0,
-            pin,
+            hashedPin,
             0.0
         );
 
@@ -87,10 +87,17 @@ public class BankSystem {
             throw new IllegalArgumentException(pinError);
         }
 
-        int pin = Integer.parseInt(pinText);
-
         for (Bank account : allAccounts) {
-            if (account.getAccountUsername().equals(accountUsername.trim()) && account.getPin() == pin) {
+            String storedPin = account.getPinHash();
+            if (account.getAccountUsername().equals(usernameForLog)
+                && storedPin != null
+                && PasswordUtil.verifyPassword(pinText, storedPin)) {
+
+                if (!PasswordUtil.isPbkdf2Hash(storedPin)) {
+                    String hashedPin = PasswordUtil.hashPassword(pinText);
+                    account.setPinHash(hashedPin);
+                    databaseManager.updateAccountPinHash(account.getAccountId(), hashedPin);
+                }
                 databaseManager.logLoginAttempt("CLIENT", usernameForLog, true, "Login successful");
                 return account;
             }

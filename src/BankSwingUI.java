@@ -18,6 +18,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -201,6 +202,19 @@ public class BankSwingUI extends JFrame {
         addFormRow(card, gbc, 6, "Username", regUsernameField);
         addFormRow(card, gbc, 7, "6-digit PIN", regPinField);
 
+        char registerPinMask = regPinField.getEchoChar();
+        JCheckBox showRegisterPin = new JCheckBox("Show PIN");
+        showRegisterPin.setOpaque(false);
+        showRegisterPin.setForeground(PRIMARY_DARK);
+        showRegisterPin.addActionListener(e -> regPinField.setEchoChar(showRegisterPin.isSelected() ? (char) 0 : registerPinMask));
+
+        gbc.gridy = 8;
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(2, 10, 8, 10);
+        card.add(showRegisterPin, gbc);
+
         JButton registerBtn = primaryButton("Register");
         registerBtn.addActionListener(e -> handleRegister());
 
@@ -212,7 +226,7 @@ public class BankSwingUI extends JFrame {
         actions.add(registerBtn);
         actions.add(backBtn);
 
-        gbc.gridy = 8;
+        gbc.gridy = 9;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(20, 10, 8, 10);
@@ -243,6 +257,19 @@ public class BankSwingUI extends JFrame {
         addFormRow(card, gbc, 1, "Username", loginUsernameField);
         addFormRow(card, gbc, 2, "PIN", loginPinField);
 
+        char loginPinMask = loginPinField.getEchoChar();
+        JCheckBox showLoginPin = new JCheckBox("Show PIN");
+        showLoginPin.setOpaque(false);
+        showLoginPin.setForeground(PRIMARY_DARK);
+        showLoginPin.addActionListener(e -> loginPinField.setEchoChar(showLoginPin.isSelected() ? (char) 0 : loginPinMask));
+
+        gbc.gridy = 3;
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(2, 10, 8, 10);
+        card.add(showLoginPin, gbc);
+
         JButton loginBtn = primaryButton("Login");
         loginBtn.addActionListener(e -> handleUserLogin());
 
@@ -254,7 +281,7 @@ public class BankSwingUI extends JFrame {
         actions.add(loginBtn);
         actions.add(backBtn);
 
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(22, 10, 10, 10);

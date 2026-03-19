@@ -8,19 +8,19 @@ public class Bank {
     private final String gmail;
     private final String telephone;
     private final String accountUsername;
-    private final int pin;
+    private String pinHash;
 
     private double balance;
     private double savingsBalance;
     private double loanAmount;
 
     public Bank(String accountHolder, int age, String address, String gmail, String telephone,
-                String accountUsername, double balance, int pin, double ignoredLoan) {
-        this(0, accountHolder, age, address, gmail, telephone, accountUsername, balance, 0.0, 0.0, pin);
+            String accountUsername, double balance, String pinHash, double ignoredLoan) {
+        this(0, accountHolder, age, address, gmail, telephone, accountUsername, balance, 0.0, 0.0, pinHash);
     }
 
     public Bank(int accountId, String accountHolder, int age, String address, String gmail, String telephone,
-                String accountUsername, double balance, double savingsBalance, double loanAmount, int pin) {
+            String accountUsername, double balance, double savingsBalance, double loanAmount, String pinHash) {
         this.accountId = accountId;
         this.accountHolder = accountHolder;
         this.age = age;
@@ -30,7 +30,7 @@ public class Bank {
         this.accountUsername = accountUsername;
         this.balance = balance;
         this.savingsBalance = savingsBalance;
-        this.pin = pin;
+        this.pinHash = pinHash;
         this.loanAmount = loanAmount;
     }
 
@@ -160,8 +160,12 @@ public class Bank {
         return savingsBalance;
     }
 
-    public int getPin() {
-        return pin;
+    public String getPinHash() {
+        return pinHash;
+    }
+
+    public void setPinHash(String pinHash) {
+        this.pinHash = pinHash;
     }
 
     public boolean hasActiveLoan() {

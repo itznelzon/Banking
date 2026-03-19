@@ -13,17 +13,23 @@ public class DatabaseManager {
     }
 
     public boolean validateAdminCredentials(String username, String password) {
-        String sql = "SELECT COUNT(*) FROM admins WHERE username = ? AND password = ?";
+        String sql = "SELECT id, password FROM admins WHERE username = ?";
 
         try (Connection conn = openConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
-            stmt.setString(2, password);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0;
+                    int adminId = rs.getInt("id");
+                    String storedPassword = rs.getString("password");
+
+                    boolean isValid = PasswordUtil.verifyPassword(password, storedPassword);
+                    if (isValid && !PasswordUtil.isPbkdf2Hash(storedPassword)) {
+                        updateAdminPasswordHash(adminId, PasswordUtil.hashPassword(password));
+                    }
+                    return isValid;
                 }
             }
 
@@ -69,7 +75,7 @@ public class DatabaseManager {
                     rs.getDouble("checking_balance"),
                     rs.getDouble("savings_balance"),
                     rs.getDouble("loan_amount"),
-                    rs.getInt("pin")
+                    rs.getString("pin")
                 );
                 accounts.add(account);
             }
@@ -129,6 +135,20 @@ public class DatabaseManager {
         }
     }
 
+    public void updateAccountPinHash(int accountId, String pinHash) {
+        String sql = "UPDATE accounts SET pin = ? WHERE id = ?";
+
+        try (Connection conn = openConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, pinHash);
+            stmt.setInt(2, accountId);
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Cannot update account PIN hash in MySQL. " + ex.getMessage(), ex);
+        }
+    }
+
     private void bindAccountFields(PreparedStatement stmt, Bank account) throws SQLException {
         stmt.setString(1, account.getAccountHolder());
         stmt.setInt(2, account.getAge());
@@ -136,7 +156,7 @@ public class DatabaseManager {
         stmt.setString(4, account.getGmail());
         stmt.setString(5, account.getTelephone());
         stmt.setString(6, account.getAccountUsername());
-        stmt.setInt(7, account.getPin());
+        stmt.setString(7, account.getPinHash());
         stmt.setDouble(8, account.getBalance());
         stmt.setDouble(9, account.getSavingsBalance());
         stmt.setDouble(10, account.getLoanAmount());
@@ -152,7 +172,7 @@ public class DatabaseManager {
             "gmail VARCHAR(180) NOT NULL," +
             "telephone VARCHAR(20) NOT NULL," +
             "username VARCHAR(80) NOT NULL UNIQUE," +
-            "pin INT NOT NULL," +
+            "pin VARCHAR(255) NOT NULL," +
             "checking_balance DOUBLE NOT NULL DEFAULT 0," +
             "savings_balance DOUBLE NOT NULL DEFAULT 0," +
             "loan_amount DOUBLE NOT NULL DEFAULT 0" +
@@ -175,21 +195,110 @@ public class DatabaseManager {
             "logged_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" +
             ")";
 
-        String seedAdminSql =
-            "INSERT INTO admins (username, password) VALUES ('Admin', 'P@&&Word$') " +
-            "ON DUPLICATE KEY UPDATE username = username";
-
         try (Connection conn = openConnection(); Statement stmt = conn.createStatement()) {
             stmt.execute(createAccountsTableSql);
             stmt.execute(createAdminsTableSql);
             stmt.execute(createLoginLogsTableSql);
-            stmt.execute(seedAdminSql);
+            migrateLegacyAccountPins(conn);
+            ensureDefaultAdmin(conn);
+            upgradeLegacyAdminPasswords(conn);
         } catch (SQLException ex) {
             throw new IllegalStateException(
                 "Unable to initialize MySQL schema. Check if XAMPP MySQL is running and database '"
                     + DatabaseConnection.getDatabaseName() + "' exists. " + ex.getMessage(),
                 ex
             );
+        }
+    }
+
+    private void migrateLegacyAccountPins(Connection conn) throws SQLException {
+        String typeQuery =
+            "SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS " +
+            "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'accounts' AND COLUMN_NAME = 'pin'";
+
+        String dataType = null;
+        try (PreparedStatement stmt = conn.prepareStatement(typeQuery);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                dataType = rs.getString("DATA_TYPE");
+            }
+        }
+
+        if (dataType == null || dataType.equalsIgnoreCase("varchar")) {
+            return;
+        }
+
+        List<int[]> legacyPins = new ArrayList<>();
+        String selectPinsSql = "SELECT id, pin FROM accounts";
+        try (PreparedStatement stmt = conn.prepareStatement(selectPinsSql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                legacyPins.add(new int[] {rs.getInt("id"), rs.getInt("pin")});
+            }
+        }
+
+        try (Statement alterStmt = conn.createStatement()) {
+            alterStmt.execute("ALTER TABLE accounts MODIFY pin VARCHAR(255) NOT NULL");
+        }
+
+        String updateSql = "UPDATE accounts SET pin = ? WHERE id = ?";
+        try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+            for (int[] item : legacyPins) {
+                String hashed = PasswordUtil.hashPassword(String.valueOf(item[1]));
+                updateStmt.setString(1, hashed);
+                updateStmt.setInt(2, item[0]);
+                updateStmt.addBatch();
+            }
+            if (!legacyPins.isEmpty()) {
+                updateStmt.executeBatch();
+            }
+        }
+    }
+
+    private void ensureDefaultAdmin(Connection conn) throws SQLException {
+        String existsSql = "SELECT id FROM admins WHERE username = ?";
+        try (PreparedStatement existsStmt = conn.prepareStatement(existsSql)) {
+            existsStmt.setString(1, "Admin");
+            try (ResultSet rs = existsStmt.executeQuery()) {
+                if (rs.next()) {
+                    return;
+                }
+            }
+        }
+
+        String insertSql = "INSERT INTO admins (username, password) VALUES (?, ?)";
+        try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+            insertStmt.setString(1, "Admin");
+            insertStmt.setString(2, PasswordUtil.hashPassword("P@&&Word$"));
+            insertStmt.executeUpdate();
+        }
+    }
+
+    private void upgradeLegacyAdminPasswords(Connection conn) throws SQLException {
+        String selectSql = "SELECT id, password FROM admins";
+        try (PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+             ResultSet rs = selectStmt.executeQuery()) {
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String storedPassword = rs.getString("password");
+                if (!PasswordUtil.isPbkdf2Hash(storedPassword)) {
+                    updateAdminPasswordHash(id, PasswordUtil.hashPassword(storedPassword));
+                }
+            }
+        }
+    }
+
+    private void updateAdminPasswordHash(int adminId, String hashedPassword) {
+        String updateSql = "UPDATE admins SET password = ? WHERE id = ?";
+        try (Connection conn = openConnection();
+             PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+
+            updateStmt.setString(1, hashedPassword);
+            updateStmt.setInt(2, adminId);
+            updateStmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Cannot update admin password hash in MySQL. " + ex.getMessage(), ex);
         }
     }
 

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS accounts (
     gmail VARCHAR(180) NOT NULL,
     telephone VARCHAR(20) NOT NULL,
     username VARCHAR(80) NOT NULL UNIQUE,
-    pin INT NOT NULL,
+    pin VARCHAR(255) NOT NULL,
     checking_balance DOUBLE NOT NULL DEFAULT 0,
     savings_balance DOUBLE NOT NULL DEFAULT 0,
     loan_amount DOUBLE NOT NULL DEFAULT 0
@@ -29,7 +29,3 @@ CREATE TABLE IF NOT EXISTS login_logs (
     notes VARCHAR(255),
     logged_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-INSERT INTO admins (username, password)
-VALUES ('Admin', 'P@&&Word$')
-ON DUPLICATE KEY UPDATE username = username;

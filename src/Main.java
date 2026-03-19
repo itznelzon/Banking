@@ -8,7 +8,8 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             try {
                 DatabaseConnection.ensureMySqlDriverLoaded();
-                try (Connection ignored = DatabaseConnection.getConnection()) {
+                try (Connection connection = DatabaseConnection.getConnection()) {
+                    connection.getMetaData();
                     BankSystem bankSystem = new BankSystem();
                     BankSwingUI ui = new BankSwingUI(bankSystem);
                     ui.setVisible(true);
