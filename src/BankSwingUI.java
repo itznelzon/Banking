@@ -119,10 +119,14 @@ public class BankSwingUI extends JFrame {
         try {
             String hostname = java.net.InetAddress.getLocalHost().getHostName();
             String hostaddr = java.net.InetAddress.getLocalHost().getHostAddress();
-            return hostname.equalsIgnoreCase("localhost") || 
+            System.out.println("DEBUG: Hostname = " + hostname + ", IP = " + hostaddr);
+            boolean isLocal = hostname.equalsIgnoreCase("localhost") || 
                    hostaddr.equals("127.0.0.1") || 
                    hostname.contains("local");
+            System.out.println("DEBUG: isLocalhost = " + isLocal);
+            return isLocal;
         } catch (java.net.UnknownHostException | SecurityException ex) {
+            System.out.println("DEBUG: Exception in detectLocalhost: " + ex.getMessage());
             return false;
         }
     }
