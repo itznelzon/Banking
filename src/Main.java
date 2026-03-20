@@ -94,6 +94,7 @@ public class Main {
     private static void launchUserInterface(BankSystem bankSystem) {
         try {
             BankSwingUI ui = new BankSwingUI(bankSystem);
+            ui.setTitle(APP_NAME);
             ui.setVisible(true);
         } catch (Exception ex) {
             showConnectionError("Failed to launch user interface: " + ex.getMessage());
