@@ -1293,20 +1293,20 @@ public class BankSwingUI extends JFrame {
 
             int w = getWidth();
             int h = getHeight();
-            // Black background to showcase green & gold design
+            // Dark Green background to showcase green & gold design
             GradientPaint gp = new GradientPaint(
                 0,
                 0,
-                new Color(15, 15, 20),
+                new Color(0, 77, 48),
                 w,
                 h,
-                new Color(10, 10, 15)
+                new Color(0, 102, 64)
             );
             g2.setPaint(gp);
             g2.fillRect(0, 0, w, h);
 
-            // Subtle accent circles with green tint
-            g2.setColor(new Color(0, 102, 64, 8));
+            // Subtle accent circles with darker green tint
+            g2.setColor(new Color(0, 51, 32, 15));
             g2.fillOval((int) (w * 0.68), -110, 340, 340);
             g2.fillOval(-160, (int) (h * 0.58), 400, 320);
             g2.dispose();
