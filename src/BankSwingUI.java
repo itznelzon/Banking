@@ -44,7 +44,6 @@ public class BankSwingUI extends JFrame {
     private static final Color PRIMARY_DARK = new Color(0, 77, 48);      // Darker Green
     private static final Color ACCENT = new Color(212, 175, 55);         // Elegant Gold
     private static final Color SOFT_BG = new Color(244, 249, 246);       // Light Greenish-White
-    private static final Color CARD_BG = new Color(255, 255, 255, 248);  // Pure White
     private static final Color TEXT_DARK = new Color(20, 35, 28);        // Dark Forest Green
     private static final Color TEXT_LIGHT = new Color(90, 105, 95);      // Muted Green-Gray
     private static final Color BORDER_COLOR = new Color(200, 220, 210);  // Light Green Border
@@ -1071,16 +1070,24 @@ public class BankSwingUI extends JFrame {
         JPanel card = new JPanel(layout) {
             @Override
             protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                // Draw subtle border
+                
+                // Subtle gradient background - light green to lighter green
+                GradientPaint gp = new GradientPaint(
+                    0, 0, new Color(235, 248, 242),
+                    getWidth(), getHeight(), new Color(245, 250, 248)
+                );
+                g2.setPaint(gp);
+                g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+                
+                // Draw elegant border
                 g2.setColor(BORDER_COLOR);
+                g2.setStroke(new java.awt.BasicStroke(1.5f));
                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
             }
         };
-        card.setOpaque(true);
-        card.setBackground(CARD_BG);
+        card.setOpaque(false);
         card.setBorder(new EmptyBorder(18, 18, 18, 18));
 
         if (prefWidth > 0 && prefHeight > 0) {
