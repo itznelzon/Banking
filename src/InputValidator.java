@@ -1,120 +1,63 @@
-import java.util.Scanner;
-
 public class InputValidator {
-    
-    public String getValidName(Scanner scanner) {
-        String name = "";
-        boolean valid = false;
-        
-        while (!valid) {
-            System.out.print("Enter Fullname: ");
-            name = scanner.nextLine();
-            
-            if (name.trim().isEmpty()) {
-                System.out.println("Error: Fullname cannot be empty!");
-            } else if (name.matches("[a-zA-Z ]+")) {
-                valid = true;
-            } else {
-                System.out.println("Error: Fullname must contain only letters and spaces! (No numbers or special characters)");
-            }
+    public String validateName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "Full name is required.";
         }
-        return name;
+        if (!name.trim().matches("[a-zA-Z ]+")) {
+            return "Full name must contain only letters and spaces.";
+        }
+        return null;
     }
-    
-    public int getValidAge(Scanner scanner) {
-        int age = 0;
-        boolean valid = false;
-        
-        while (!valid) {
-            System.out.print("Enter Age: ");
-            String ageInput = scanner.nextLine();
-            
-            if (ageInput.matches("\\d+")) {
-                age = Integer.parseInt(ageInput);
-                if (age >= 18 && age <= 120) {
-                    valid = true;
-                } else if (age < 18) {
-                    System.out.println("Error: You must be at least 18 years old to open an account!");
-                } else {
-                    System.out.println("Error: Please enter a valid age!");
-                }
-            } else {
-                System.out.println("Error: Age must be a number!");
-            }
+
+    public String validateAge(int age) {
+        if (age < 18 || age > 120) {
+            return "Age must be between 18 and 120.";
         }
-        return age;
+        return null;
     }
-    
-    public String getValidAddress(Scanner scanner) {
-        String address = "";
-        boolean valid = false;
-        
-        while (!valid) {
-            System.out.print("Enter Address: ");
-            address = scanner.nextLine();
-            
-            if (address.trim().isEmpty()) {
-                System.out.println("Error: Address cannot be empty!");
-            } else {
-                valid = true;
-            }
+
+    public String validateAddress(String address) {
+        if (address == null || address.trim().isEmpty()) {
+            return "Address is required.";
         }
-        return address;
+        return null;
     }
-    
-    public String getValidGmail(Scanner scanner) {
-        String gmail = "";
-        boolean valid = false;
-        
-        while (!valid) {
-            System.out.print("Enter Gmail: ");
-            gmail = scanner.nextLine();
-            
-            if (gmail.matches("^[a-zA-Z0-9._%+-]+@gmail\\.com$")) {
-                valid = true;
-            } else {
-                System.out.println("Error: Please enter a valid Gmail address (example@gmail.com)");
-            }
+
+    public String validateGmail(String gmail) {
+        if (gmail == null || !gmail.trim().matches("^[a-zA-Z0-9._%+-]+@gmail\\.com$")) {
+            return "Please use a valid gmail.com address.";
         }
-        return gmail;
+        return null;
     }
-    
-    public String getValidTelephone(Scanner scanner) {
-        String telephone = "";
-        boolean valid = false;
-        
-        while (!valid) {
-            System.out.print("Enter Telephone (11 digits): ");
-            telephone = scanner.nextLine();
-            
-            if (telephone.matches("\\d{11}")) {
-                valid = true;
-            } else {
-                System.out.println("Error: Telephone must be exactly 11 digits!");
-            }
+
+    public String validateTelephone(String telephone) {
+        if (telephone == null || !telephone.matches("\\d{11}")) {
+            return "Telephone must contain exactly 11 digits.";
         }
-        return telephone;
+        return null;
     }
-    
-    public int getValidPIN(Scanner scanner) {
-        int pin = 0;
-        boolean valid = false;
-        
-        while (!valid) {
-            System.out.print("Create a 6-digit PIN: ");
-            String pinInput = scanner.nextLine();
-            
-            if (pinInput.matches("\\d+")) {
-                if (pinInput.length() == 6) {
-                    pin = Integer.parseInt(pinInput);
-                    valid = true;
-                } else {
-                    System.out.println("Error: PIN must be exactly 6 digits! You entered " + pinInput.length() + " digits.");
-                }
-            } else {
-                System.out.println("Error: PIN must contain only numbers!)");
-            }
+
+    public String validateUsername(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return "Username is required.";
         }
-        return pin;
+        if (username.trim().length() < 4) {
+            return "Username must be at least 4 characters.";
+        }
+        return null;
+    }
+
+    public String validatePin(String pinValue) {
+        if (pinValue == null || !pinValue.matches("\\d{6}")) {
+            return "PIN must be exactly 6 digits.";
+        }
+        return null;
+    }
+
+    public String validateMoneyAmount(double amount) {
+        if (amount <= 0) {
+            return "Amount must be greater than zero.";
+        }
+        return null;
     }
 }

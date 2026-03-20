@@ -1,19 +1,20 @@
 public class Bank {
-    private String accountHolder;
-    private int age;
-    private String address;
-    private String gmail;
-    private String telephone;
-    private String accountUsername;
+    private static final double LOAN_INTEREST_RATE = 0.05;
+
+    private final String accountHolder;
+    private final int age;
+    private final String address;
+    private final String gmail;
+    private final String telephone;
+    private final String accountUsername;
+    private final int pin;
+
     private double balance;
     private double savingsBalance;
-    private int pin;
     private double loanAmount;
-    private double loanInterest;
-    private boolean hasActiveLoan;
-    private double loan;
-    public Bank(String accountHolder, int age, String address, String gmail, String telephone, 
-                String accountUsername, double balance, int pin, double loan) {
+
+    public Bank(String accountHolder, int age, String address, String gmail, String telephone,
+                String accountUsername, double balance, int pin, double ignoredLoan) {
         this.accountHolder = accountHolder;
         this.age = age;
         this.address = address;
@@ -24,195 +25,133 @@ public class Bank {
         this.savingsBalance = 0.0;
         this.pin = pin;
         this.loanAmount = 0.0;
-        this.loanInterest = 0.05;
-        this.hasActiveLoan = false;
-        this.loan = 0.0;
-    }
-    
-    public void checkBalance() {
-        System.out.println("\n--- Account Information ---");
-        System.out.println("Account Holder: " + accountHolder);
-        System.out.println("Age: " + age);
-        System.out.println("Address: " + address);
-        System.out.println("Gmail: " + gmail);
-        System.out.println("Telephone: " + telephone);
-        System.out.println("Username: " + accountUsername);
-        System.out.printf("Current Balance: %.2f%n", balance);
-        System.out.printf("Savings Balance: %.2f%n", savingsBalance);
-        System.out.printf("Total Balance: %.2f%n", (balance + savingsBalance));
-        if (hasActiveLoan) {
-            System.out.printf("Outstanding Loan: %.2f%n", loanAmount);
-        }
-    }
-    
-    public void deposit(double amount) {
-        if (amount > 0) {
-            balance += amount;
-            System.out.printf(" %.2f deposited successfully.%n", amount);
-            System.out.printf("New Balance: %.2f%n", balance);
-        } else {
-            System.out.println("Invalid deposit amount!");
-        }
-    }
-    
-    public void withdraw(double amount) {
-        if (amount > 0 && amount <= balance) {
-            balance -= amount;
-            System.out.printf("%.2f withdrawn successfully.%n", amount);
-            System.out.printf("New Balance: %.2f%n", balance);
-        } else if (amount > balance) {
-            System.out.println("Insufficient funds!");
-        } else {
-            System.out.println("Invalid withdrawal amount!");
-        } 
     }
 
-    public void payloan() {
-        if (balance < loan) {
-            System.out.print("You dont have enough credits.(yes/no): ");
-        } else {
-            balance -= loan;
-            hasActiveLoan = false;
-            loan = 0.0;
-            System.out.println("New Balance " + balance);
+    public void deposit(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be greater than zero.");
         }
+        balance += amount;
     }
-    
+
+    public void withdraw(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Withdrawal amount must be greater than zero.");
+        }
+        if (amount > balance) {
+            throw new IllegalArgumentException("Insufficient funds in checking balance.");
+        }
+        balance -= amount;
+    }
+
     public void transferToSavings(double amount) {
         if (amount <= 0) {
-            System.out.println("Invalid transfer amount!");
-            return;
+            throw new IllegalArgumentException("Transfer amount must be greater than zero.");
         }
-        
         if (amount > balance) {
-            System.out.println("Insufficient funds in checking account!");
-            System.out.printf("Available balance: %.2f%n", balance);
-            return;
+            throw new IllegalArgumentException("Insufficient funds in checking balance.");
         }
-        
         balance -= amount;
         savingsBalance += amount;
-        System.out.printf("\n %.2f transferred to savings successfully!%n", amount);
-        System.out.printf("Checking Balance: %.2f%n", balance);
-        System.out.printf("Savings Balance: %.2f%n", savingsBalance);
     }
-    
+
     public void withdrawFromSavings(double amount) {
         if (amount <= 0) {
-            System.out.println("Invalid withdrawal amount!");
-            return;
+            throw new IllegalArgumentException("Withdrawal amount must be greater than zero.");
         }
-        
         if (amount > savingsBalance) {
-            System.out.println("Insufficient funds in savings account!");
-            System.out.printf("Available savings balance: %.2f%n", savingsBalance);
-            return;
+            throw new IllegalArgumentException("Insufficient funds in savings balance.");
         }
-        
         savingsBalance -= amount;
         balance += amount;
-        System.out.printf("\n %.2f withdrawn from savings successfully!%n", amount);
-        System.out.printf("Checking Balance: %.2f%n", balance);
-        System.out.printf("Savings Balance: %.2f%n", savingsBalance);
     }
-    
-    public void viewSavingsBalance() {
-        System.out.println("\n--- Savings Account ---");
-        System.out.printf("Savings Balance: %.2f%n", savingsBalance);
+
+    public double requestLoan(double requestedAmount) {
+        if (hasActiveLoan()) {
+            throw new IllegalStateException("Please pay your active loan before requesting a new one.");
+        }
+        if (requestedAmount <= 0) {
+            throw new IllegalArgumentException("Loan amount must be greater than zero.");
+        }
+        double maxLoanAmount = getMaxLoanAmount();
+        if (requestedAmount > maxLoanAmount) {
+            throw new IllegalArgumentException(String.format("Maximum allowable loan is %.2f", maxLoanAmount));
+        }
+
+        double totalWithInterest = requestedAmount * (1 + LOAN_INTEREST_RATE);
+        balance += requestedAmount;
+        loanAmount = totalWithInterest;
+        return totalWithInterest;
     }
-    
-    public void requestLoan(double amount) {
-        if (hasActiveLoan) {
-            System.out.println("\nYou already have an active loan!");
-            System.out.printf("Outstanding loan amount: %.2f%n", loanAmount);
-            System.out.println("Please pay off your current loan before requesting a new one.");
-            return;
+
+    public void payLoanInFull() {
+        if (!hasActiveLoan()) {
+            throw new IllegalStateException("No active loan to pay.");
         }
-        
-        if (amount <= 0) {
-            System.out.println("Invalid loan amount!");
-            return;
+        if (balance < loanAmount) {
+            throw new IllegalArgumentException("Insufficient checking balance to pay this loan.");
         }
-        
-        double maxLoanAmount = balance * 5;
-        
-        if (amount > maxLoanAmount) {
-            System.out.println("\n Loan request denied!");
-            System.out.printf("Maximum loan amount based on your balance: %.2f%n", maxLoanAmount);
-            return;
-        }
-        
-        double totalLoanWithInterest = amount + (amount * loanInterest);
-        loanAmount = totalLoanWithInterest;
-        balance += amount;
-        hasActiveLoan = true;
-        loan += totalLoanWithInterest;
-        
-        System.out.println("\n Loan approved!");
-        System.out.printf("Loan amount: %.2f%n", amount);
-        System.out.printf("Interest rate: %.0f%%%n", loanInterest * 100);
-        System.out.printf("Total to repay: %.2f%n", totalLoanWithInterest);
-        System.out.printf("New Balance: %.2f%n", balance);
+        balance -= loanAmount;
+        loanAmount = 0.0;
     }
-    
-    public void viewLoanStatus() {
-        System.out.println("\n--- Loan Status ---");
-        if (hasActiveLoan) {
-            System.out.printf("Outstanding Loan: %.2f%n", loanAmount);
-            System.out.printf("Interest Rate: %.0f%%%n", loanInterest * 100);
-            System.out.println("\nTo repay your loan, use the Withdraw option.");
-            System.out.println("(Note: In this simple version, manual repayment tracking is needed)");
-        } else {
-            System.out.println("No active loans.");
-        }
+
+    public double getMaxLoanAmount() {
+        return balance * 5;
     }
-    
-   
+
+    public double getTotalBalance() {
+        return balance + savingsBalance;
+    }
+
+    public double getNetWorth() {
+        return getTotalBalance() - loanAmount;
+    }
+
     public String getAccountHolder() {
         return accountHolder;
     }
-    
+
     public int getAge() {
         return age;
     }
-    
+
     public String getAddress() {
         return address;
     }
-    
+
     public String getGmail() {
         return gmail;
     }
-    
+
     public String getTelephone() {
         return telephone;
     }
-    
+
     public String getAccountUsername() {
         return accountUsername;
     }
-    
+
     public double getBalance() {
         return balance;
     }
-    
+
     public double getSavingsBalance() {
         return savingsBalance;
     }
-    
+
     public int getPin() {
         return pin;
     }
-    
+
     public boolean hasActiveLoan() {
-        return hasActiveLoan;
+        return loanAmount > 0;
     }
-    
+
     public double getLoanAmount() {
         return loanAmount;
     }
-    
+
     public double getLoanInterest() {
-        return loanInterest;
+        return LOAN_INTEREST_RATE;
     }
 }
