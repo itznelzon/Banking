@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -11,10 +12,13 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.RenderingHints;
+import java.io.IOException;
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -51,6 +55,11 @@ public class BankSwingUI extends JFrame {
     private final JPanel cards;
 
     private Bank currentAccount;
+    private static final String ACTIVE_DB = DatabaseConnection.getDatabaseName();
+    private static final String ADMIN_LOCALHOST_URL =
+        "http://localhost/phpmyadmin/index.php?route=/database/structure&db=" + ACTIVE_DB;
+    private static final String ACCOUNTS_TABLE_URL =
+        "http://localhost/phpmyadmin/index.php?route=/table/structure&db=" + ACTIVE_DB + "&table=accounts";
 
     private JTextField regNameField;
     private JTextField regAgeField;
@@ -110,7 +119,7 @@ public class BankSwingUI extends JFrame {
         JPanel content = new JPanel(new GridBagLayout());
         content.setOpaque(false);
 
-        JPanel card = makeCardPanel(new GridBagLayout(), 620, 460);
+        JPanel card = makeCardPanel(new GridBagLayout(), 620, 420);
         GridBagConstraints gbc = baseGbc();
 
         JLabel title = new JLabel("CAGUIOA BANK", SwingConstants.CENTER);
@@ -125,14 +134,14 @@ public class BankSwingUI extends JFrame {
         highlight.setFont(new Font("Segoe UI", Font.BOLD, 18));
         highlight.setForeground(ACCENT.darker());
 
-        JButton registerBtn = primaryButton("Create New Account");
+        JButton registerBtn = primaryButton("Create Client Account");
         registerBtn.addActionListener(e -> showScreen(SCREEN_REGISTER));
 
-        JButton loginBtn = secondaryButton("Login to Existing Account");
+        JButton loginBtn = primaryButton("Client Login Page");
         loginBtn.addActionListener(e -> showScreen(SCREEN_LOGIN));
 
-        JButton adminBtn = textButton("Admin Panel");
-        adminBtn.addActionListener(e -> showScreen(SCREEN_ADMIN_LOGIN));
+        JButton adminBtn = secondaryButton("Admin Localhost");
+        adminBtn.addActionListener(e -> openAdminLocalhost());
 
         gbc.insets = new Insets(12, 20, 4, 20);
         gbc.gridy = 0;
@@ -145,11 +154,11 @@ public class BankSwingUI extends JFrame {
         gbc.gridy = 2;
         card.add(highlight, gbc);
 
-        gbc.insets = new Insets(30, 40, 8, 40);
+        gbc.insets = new Insets(28, 40, 10, 40);
         gbc.gridy = 3;
         card.add(registerBtn, gbc);
 
-        gbc.insets = new Insets(8, 40, 8, 40);
+        gbc.insets = new Insets(10, 40, 10, 40);
         gbc.gridy = 4;
         card.add(loginBtn, gbc);
 
@@ -168,7 +177,7 @@ public class BankSwingUI extends JFrame {
         JPanel card = makeCardPanel(new GridBagLayout(), 700, 530);
         GridBagConstraints gbc = baseGbc();
 
-        JLabel title = sectionTitle("Register New Account");
+        JLabel title = sectionTitle("Register Client Account");
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(12, 10, 18, 10);
@@ -193,7 +202,20 @@ public class BankSwingUI extends JFrame {
         addFormRow(card, gbc, 6, "Username", regUsernameField);
         addFormRow(card, gbc, 7, "6-digit PIN", regPinField);
 
-        JButton registerBtn = primaryButton("Register Account");
+        char registerPinMask = regPinField.getEchoChar();
+        JCheckBox showRegisterPin = new JCheckBox("Show PIN");
+        showRegisterPin.setOpaque(false);
+        showRegisterPin.setForeground(PRIMARY_DARK);
+        showRegisterPin.addActionListener(e -> regPinField.setEchoChar(showRegisterPin.isSelected() ? (char) 0 : registerPinMask));
+
+        gbc.gridy = 8;
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(2, 10, 8, 10);
+        card.add(showRegisterPin, gbc);
+
+        JButton registerBtn = primaryButton("Register");
         registerBtn.addActionListener(e -> handleRegister());
 
         JButton backBtn = textButton("Back");
@@ -204,7 +226,7 @@ public class BankSwingUI extends JFrame {
         actions.add(registerBtn);
         actions.add(backBtn);
 
-        gbc.gridy = 8;
+        gbc.gridy = 9;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(20, 10, 8, 10);
@@ -235,6 +257,19 @@ public class BankSwingUI extends JFrame {
         addFormRow(card, gbc, 1, "Username", loginUsernameField);
         addFormRow(card, gbc, 2, "PIN", loginPinField);
 
+        char loginPinMask = loginPinField.getEchoChar();
+        JCheckBox showLoginPin = new JCheckBox("Show PIN");
+        showLoginPin.setOpaque(false);
+        showLoginPin.setForeground(PRIMARY_DARK);
+        showLoginPin.addActionListener(e -> loginPinField.setEchoChar(showLoginPin.isSelected() ? (char) 0 : loginPinMask));
+
+        gbc.gridy = 3;
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(2, 10, 8, 10);
+        card.add(showLoginPin, gbc);
+
         JButton loginBtn = primaryButton("Login");
         loginBtn.addActionListener(e -> handleUserLogin());
 
@@ -246,7 +281,7 @@ public class BankSwingUI extends JFrame {
         actions.add(loginBtn);
         actions.add(backBtn);
 
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(22, 10, 10, 10);
@@ -338,38 +373,38 @@ public class BankSwingUI extends JFrame {
 
         JButton depositBtn = secondaryButton("Deposit");
         depositBtn.addActionListener(e -> handleAmountAction("Deposit", amount -> {
-            currentAccount.deposit(amount);
+            bankSystem.deposit(currentAccount, amount);
             return "Deposit successful.";
         }));
 
         JButton withdrawBtn = secondaryButton("Withdraw");
         withdrawBtn.addActionListener(e -> handleAmountAction("Withdraw", amount -> {
-            currentAccount.withdraw(amount);
+            bankSystem.withdraw(currentAccount, amount);
             return "Withdrawal successful.";
         }));
 
         JButton toSavingsBtn = secondaryButton("Transfer to Savings");
         toSavingsBtn.addActionListener(e -> handleAmountAction("Transfer to Savings", amount -> {
-            currentAccount.transferToSavings(amount);
+            bankSystem.transferToSavings(currentAccount, amount);
             return "Funds transferred to savings.";
         }));
 
         JButton fromSavingsBtn = secondaryButton("Withdraw from Savings");
         fromSavingsBtn.addActionListener(e -> handleAmountAction("Withdraw from Savings", amount -> {
-            currentAccount.withdrawFromSavings(amount);
+            bankSystem.withdrawFromSavings(currentAccount, amount);
             return "Funds moved from savings to checking.";
         }));
 
         JButton requestLoanBtn = secondaryButton("Request Loan");
         requestLoanBtn.addActionListener(e -> handleAmountAction("Request Loan", amount -> {
-            double totalToRepay = currentAccount.requestLoan(amount);
+            double totalToRepay = bankSystem.requestLoan(currentAccount, amount);
             return "Loan approved. Total repayment: " + formatMoney(totalToRepay);
         }));
 
         JButton payLoanBtn = secondaryButton("Pay Loan In Full");
         payLoanBtn.addActionListener(e -> {
             try {
-                currentAccount.payLoanInFull();
+                bankSystem.payLoanInFull(currentAccount);
                 refreshUserDashboard();
                 showInfo("Loan paid successfully.");
             } catch (RuntimeException ex) {
@@ -436,7 +471,7 @@ public class BankSwingUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(adminTable);
         tableCard.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel actions = new JPanel(new GridLayout(1, 4, 10, 0));
+        JPanel actions = new JPanel(new GridLayout(1, 6, 10, 0));
         actions.setOpaque(false);
         actions.setBorder(new EmptyBorder(10, 0, 0, 0));
 
@@ -452,38 +487,24 @@ public class BankSwingUI extends JFrame {
         JButton totalBtn = textButton("Total Accounts");
         totalBtn.addActionListener(e -> showInfo("Total registered accounts: " + bankSystem.getTotalAccounts()));
 
+        JButton phpMyAdminBtn = textButton("Open phpMyAdmin");
+        phpMyAdminBtn.addActionListener(e -> openPhpMyAdmin());
+
+        JButton logsBtn = textButton("View Login Logs");
+        logsBtn.addActionListener(e -> showLoginLogs());
+
         actions.add(refreshBtn);
         actions.add(detailsBtn);
         actions.add(deleteBtn);
         actions.add(totalBtn);
+        actions.add(phpMyAdminBtn);
+        actions.add(logsBtn);
 
         tableCard.add(actions, BorderLayout.SOUTH);
 
         wrapper.add(header, BorderLayout.NORTH);
         wrapper.add(tableCard, BorderLayout.CENTER);
         return wrapper;
-    }
-
-    private void handleRegister() {
-        try {
-            String name = regNameField.getText();
-            int age = Integer.parseInt(regAgeField.getText().trim());
-            String address = regAddressField.getText();
-            String gmail = regGmailField.getText();
-            String telephone = regTelephoneField.getText().trim();
-            String username = regUsernameField.getText();
-            String pin = new String(regPinField.getPassword());
-
-            Bank account = bankSystem.registerAccount(name, age, address, gmail, telephone, username, pin);
-
-            clearRegistrationForm();
-            showInfo("Account created successfully for " + account.getAccountHolder() + ".");
-            showScreen(SCREEN_LOGIN);
-        } catch (NumberFormatException ex) {
-            showError("Age must be a number.");
-        } catch (IllegalArgumentException ex) {
-            showError(ex.getMessage());
-        }
     }
 
     private void handleUserLogin() {
@@ -513,6 +534,29 @@ public class BankSwingUI extends JFrame {
         }
 
         showError("Invalid admin credentials.");
+    }
+
+    private void handleRegister() {
+        try {
+            String name = regNameField.getText();
+            int age = Integer.parseInt(regAgeField.getText().trim());
+            String address = regAddressField.getText();
+            String gmail = regGmailField.getText();
+            String telephone = regTelephoneField.getText().trim();
+            String username = regUsernameField.getText();
+            String pin = new String(regPinField.getPassword());
+
+            bankSystem.registerAccount(name, age, address, gmail, telephone, username, pin);
+            clearRegistrationForm();
+            showInfo("Client account registered successfully.");
+            showScreen(SCREEN_LOGIN);
+        } catch (NumberFormatException ex) {
+            showError("Age must be a number.");
+        } catch (IllegalArgumentException ex) {
+            showError(ex.getMessage());
+        } catch (IllegalStateException ex) {
+            showError("Database registration failed: " + ex.getMessage());
+        }
     }
 
     private void handleAmountAction(String actionName, AmountAction action) {
@@ -558,7 +602,7 @@ public class BankSwingUI extends JFrame {
         for (int i = 0; i < accounts.size(); i++) {
             Bank account = accounts.get(i);
             adminTableModel.addRow(new Object[] {
-                i + 1,
+                account.getAccountId(),
                 account.getAccountUsername(),
                 account.getAccountHolder(),
                 formatMoney(account.getBalance()),
@@ -578,7 +622,7 @@ public class BankSwingUI extends JFrame {
         try {
             Bank account = bankSystem.getAccountByIndex(selected);
             String details =
-                "Account ID: " + (selected + 1) + "\n" +
+                "Account ID: " + account.getAccountId() + "\n" +
                 "Username: " + account.getAccountUsername() + "\n" +
                 "Account Holder: " + account.getAccountHolder() + "\n" +
                 "Age: " + account.getAge() + "\n" +
@@ -593,6 +637,43 @@ public class BankSwingUI extends JFrame {
             JOptionPane.showMessageDialog(this, details, "Account Details", JOptionPane.INFORMATION_MESSAGE);
         } catch (IllegalArgumentException ex) {
             showError(ex.getMessage());
+        }
+    }
+
+    private void showLoginLogs() {
+        try {
+            List<String[]> logs = bankSystem.getRecentLoginLogs(200);
+
+            DefaultTableModel logModel = new DefaultTableModel(
+                new Object[] {"ID", "Role", "Username", "Success", "Notes", "Logged At"},
+                0
+            ) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+            for (String[] logRow : logs) {
+                logModel.addRow(logRow);
+            }
+
+            JTable logTable = new JTable(logModel);
+            logTable.setRowHeight(24);
+            logTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            logTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+            JScrollPane scrollPane = new JScrollPane(logTable);
+            scrollPane.setPreferredSize(new Dimension(860, 360));
+
+            JOptionPane.showMessageDialog(
+                this,
+                scrollPane,
+                "Recent Login Logs",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+        } catch (IllegalStateException ex) {
+            showError("Cannot load login logs: " + ex.getMessage());
         }
     }
 
@@ -758,6 +839,30 @@ public class BankSwingUI extends JFrame {
 
     private void showInfo(String message) {
         JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void openPhpMyAdmin() {
+        try {
+            if (!Desktop.isDesktopSupported()) {
+                showError("Desktop browse is not supported on this machine.");
+                return;
+            }
+            Desktop.getDesktop().browse(URI.create(ACCOUNTS_TABLE_URL));
+        } catch (IOException | SecurityException ex) {
+            showError("Could not open phpMyAdmin. Make sure XAMPP Apache is running.\n" + ex.getMessage());
+        }
+    }
+
+    private void openAdminLocalhost() {
+        try {
+            if (!Desktop.isDesktopSupported()) {
+                showError("Desktop browse is not supported on this machine.");
+                return;
+            }
+            Desktop.getDesktop().browse(URI.create(ADMIN_LOCALHOST_URL));
+        } catch (IOException | SecurityException ex) {
+            showError("Could not open admin localhost.\n" + ex.getMessage());
+        }
     }
 
     @FunctionalInterface

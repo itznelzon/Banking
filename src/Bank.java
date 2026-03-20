@@ -1,20 +1,27 @@
 public class Bank {
     private static final double LOAN_INTEREST_RATE = 0.05;
 
+    private int accountId;
     private final String accountHolder;
     private final int age;
     private final String address;
     private final String gmail;
     private final String telephone;
     private final String accountUsername;
-    private final int pin;
+    private String pinHash;
 
     private double balance;
     private double savingsBalance;
     private double loanAmount;
 
     public Bank(String accountHolder, int age, String address, String gmail, String telephone,
-                String accountUsername, double balance, int pin, double ignoredLoan) {
+            String accountUsername, double balance, String pinHash, double ignoredLoan) {
+        this(0, accountHolder, age, address, gmail, telephone, accountUsername, balance, 0.0, 0.0, pinHash);
+    }
+
+    public Bank(int accountId, String accountHolder, int age, String address, String gmail, String telephone,
+            String accountUsername, double balance, double savingsBalance, double loanAmount, String pinHash) {
+        this.accountId = accountId;
         this.accountHolder = accountHolder;
         this.age = age;
         this.address = address;
@@ -22,9 +29,15 @@ public class Bank {
         this.telephone = telephone;
         this.accountUsername = accountUsername;
         this.balance = balance;
-        this.savingsBalance = 0.0;
-        this.pin = pin;
-        this.loanAmount = 0.0;
+        this.savingsBalance = savingsBalance;
+        this.pinHash = pinHash;
+        this.loanAmount = loanAmount;
+    }
+
+    public void updateFinancialState(double balance, double savingsBalance, double loanAmount) {
+        this.balance = balance;
+        this.savingsBalance = savingsBalance;
+        this.loanAmount = loanAmount;
     }
 
     public void deposit(double amount) {
@@ -33,7 +46,6 @@ public class Bank {
         }
         balance += amount;
     }
-
     public void withdraw(double amount) {
         if (amount <= 0) {
             throw new IllegalArgumentException("Withdrawal amount must be greater than zero.");
@@ -111,6 +123,13 @@ public class Bank {
         return accountHolder;
     }
 
+    public int getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(int accountId) {
+        this.accountId = accountId;
+    }
     public int getAge() {
         return age;
     }
@@ -139,10 +158,13 @@ public class Bank {
         return savingsBalance;
     }
 
-    public int getPin() {
-        return pin;
+    public String getPinHash() {
+        return pinHash;
     }
 
+    public void setPinHash(String pinHash) {
+        this.pinHash = pinHash;
+    }
     public boolean hasActiveLoan() {
         return loanAmount > 0;
     }
