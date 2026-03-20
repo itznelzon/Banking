@@ -155,13 +155,13 @@ public class BankSwingUI extends JFrame {
         highlight.setForeground(ACCENT);
 
         JButton registerBtn = primaryButton("Create Account");
-        registerBtn.addActionListener(e -> showScreen(SCREEN_UNIFIED_AUTH));
+        registerBtn.addActionListener(e -> showScreen(SCREEN_REGISTER));
 
         JButton loginBtn = primaryButton("Log In Account");
-        loginBtn.addActionListener(e -> showScreen(SCREEN_UNIFIED_AUTH));
+        loginBtn.addActionListener(e -> showScreen(SCREEN_LOGIN));
 
         JButton adminBtn = secondaryButton("Admin Access");
-        adminBtn.addActionListener(e -> showScreen(SCREEN_UNIFIED_AUTH));
+        adminBtn.addActionListener(e -> showScreen(SCREEN_ADMIN_LOGIN));
 
         gbc.insets = new Insets(20, 20, 8, 20);
         gbc.gridy = 0;
