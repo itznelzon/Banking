@@ -54,7 +54,16 @@ CALL initialize_lawbank_schema();
 -- ============================================================================
 -- TRANSACTION LOGGING STORED PROCEDURE
 -- ============================================================================
-
+-- CALL log_transaction(
+--     account_id,           -- The account performing transaction
+--     username,             -- Account username
+--     transaction_type,     -- DEPOSIT, WITHDRAW, TRANSFER_TO_SAVINGS, etc.
+--     amount,              -- Transaction amount
+--     description,         -- Transaction details
+--     checking_balance_after,   -- Checking balance after transaction
+--     savings_balance_after     -- Savings balance after transaction
+-- );
+-- ============================================================================
 DROP PROCEDURE IF EXISTS log_transaction;
 DELIMITER $$
 CREATE PROCEDURE log_transaction(
