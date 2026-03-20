@@ -1,0 +1,2 @@
+Admin Login (automatic) → Admin Dashboard
+                        → "Create Client Account" (admin registration)

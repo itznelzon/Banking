@@ -1,7 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -12,8 +11,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.RenderingHints;
-import java.io.IOException;
-import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -37,6 +34,7 @@ public class BankSwingUI extends JFrame {
     private static final String SCREEN_REGISTER = "register";
     private static final String SCREEN_LOGIN = "login";
     private static final String SCREEN_ADMIN_LOGIN = "adminLogin";
+    private static final String SCREEN_ADMIN_REGISTER = "adminRegister";
     private static final String SCREEN_USER_DASHBOARD = "userDashboard";
     private static final String SCREEN_ADMIN_DASHBOARD = "adminDashboard";
 
@@ -56,11 +54,6 @@ public class BankSwingUI extends JFrame {
 
     private Bank currentAccount;
     private final boolean isLocalhost;
-    private static final String ACTIVE_DB = DatabaseConnection.getDatabaseName();
-    private static final String ADMIN_LOCALHOST_URL =
-        "http://localhost/phpmyadmin/index.php?route=/database/structure&db=" + ACTIVE_DB;
-    private static final String ACCOUNTS_TABLE_URL =
-        "http://localhost/phpmyadmin/index.php?route=/table/structure&db=" + ACTIVE_DB + "&table=accounts";
 
     private JTextField regNameField;
     private JTextField regAgeField;
@@ -106,6 +99,7 @@ public class BankSwingUI extends JFrame {
         cards.add(buildRegisterScreen(), SCREEN_REGISTER);
         cards.add(buildLoginScreen(), SCREEN_LOGIN);
         cards.add(buildAdminLoginScreen(), SCREEN_ADMIN_LOGIN);
+        cards.add(buildAdminRegisterScreen(), SCREEN_ADMIN_REGISTER);
         cards.add(buildUserDashboardScreen(), SCREEN_USER_DASHBOARD);
         cards.add(buildAdminDashboardScreen(), SCREEN_ADMIN_DASHBOARD);
 
@@ -152,14 +146,15 @@ public class BankSwingUI extends JFrame {
         highlight.setFont(new Font("Segoe UI", Font.BOLD, 18));
         highlight.setForeground(ACCENT.darker());
 
-        JButton registerBtn = primaryButton("Create Client Account");
-        registerBtn.addActionListener(e -> showScreen(SCREEN_REGISTER));
+        JLabel subtitle2 = new JLabel("Client accounts are created by administrators", SwingConstants.CENTER);
+        subtitle2.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        subtitle2.setForeground(PRIMARY_DARK);
 
-        JButton loginBtn = primaryButton("Client Login Page");
+        JButton loginBtn = primaryButton("Client Login");
         loginBtn.addActionListener(e -> showScreen(SCREEN_LOGIN));
 
-        JButton adminBtn = secondaryButton("Admin Localhost");
-        adminBtn.addActionListener(e -> openAdminLocalhost());
+        JButton adminBtn = secondaryButton("Admin Access");
+        adminBtn.addActionListener(e -> showScreen(SCREEN_ADMIN_LOGIN));
 
         gbc.insets = new Insets(12, 20, 4, 20);
         gbc.gridy = 0;
@@ -172,11 +167,11 @@ public class BankSwingUI extends JFrame {
         gbc.gridy = 2;
         card.add(highlight, gbc);
 
-        gbc.insets = new Insets(28, 40, 10, 40);
+        gbc.insets = new Insets(8, 20, 12, 20);
         gbc.gridy = 3;
-        card.add(registerBtn, gbc);
+        card.add(subtitle2, gbc);
 
-        gbc.insets = new Insets(10, 40, 10, 40);
+        gbc.insets = new Insets(28, 40, 12, 40);
         gbc.gridy = 4;
         card.add(loginBtn, gbc);
 
@@ -333,7 +328,7 @@ public class BankSwingUI extends JFrame {
         JButton loginBtn = primaryButton("Open Admin Panel");
         loginBtn.addActionListener(e -> handleAdminLogin());
 
-        JButton backBtn = textButton("Back");
+        JButton backBtn = textButton(isLocalhost ? "Exit" : "Back");
         backBtn.addActionListener(e -> {
             adminUsernameField.setText("");
             adminPasswordField.setText("");
@@ -358,6 +353,86 @@ public class BankSwingUI extends JFrame {
 
         holder.add(card);
         return holder;
+    }
+
+    private JPanel buildAdminRegisterScreen() {
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+
+        JPanel card = makeCardPanel(new GridBagLayout(), 700, 560);
+        GridBagConstraints gbc = baseGbc();
+
+        JLabel title = sectionTitle("Admin - Create New Client Account");
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(12, 10, 18, 10);
+        card.add(title, gbc);
+
+        gbc.gridwidth = 1;
+        gbc.insets = new Insets(8, 10, 8, 10);
+
+        JTextField adminRegNameField = new JTextField();
+        JTextField adminRegAgeField = new JTextField();
+        JTextField adminRegAddressField = new JTextField();
+        JTextField adminRegGmailField = new JTextField();
+        JTextField adminRegTelephoneField = new JTextField();
+        JTextField adminRegUsernameField = new JTextField();
+        JPasswordField adminRegPinField = new JPasswordField();
+
+        addFormRow(card, gbc, 1, "Full Name", adminRegNameField);
+        addFormRow(card, gbc, 2, "Age", adminRegAgeField);
+        addFormRow(card, gbc, 3, "Address", adminRegAddressField);
+        addFormRow(card, gbc, 4, "Gmail", adminRegGmailField);
+        addFormRow(card, gbc, 5, "Telephone", adminRegTelephoneField);
+        addFormRow(card, gbc, 6, "Username", adminRegUsernameField);
+        addFormRow(card, gbc, 7, "6-digit PIN", adminRegPinField);
+
+        JButton createBtn = primaryButton("Create Client Account");
+        createBtn.addActionListener(e -> {
+            try {
+                String name = adminRegNameField.getText();
+                int age = Integer.parseInt(adminRegAgeField.getText().trim());
+                String address = adminRegAddressField.getText();
+                String gmail = adminRegGmailField.getText();
+                String telephone = adminRegTelephoneField.getText().trim();
+                String username = adminRegUsernameField.getText();
+                String pin = new String(adminRegPinField.getPassword());
+
+                bankSystem.registerAccount(name, age, address, gmail, telephone, username, pin);
+                showInfo("Client account \"" + username + "\" created successfully.");
+                adminRegNameField.setText("");
+                adminRegAgeField.setText("");
+                adminRegAddressField.setText("");
+                adminRegGmailField.setText("");
+                adminRegTelephoneField.setText("");
+                adminRegUsernameField.setText("");
+                adminRegPinField.setText("");
+                showScreen(SCREEN_ADMIN_DASHBOARD);
+            } catch (NumberFormatException ex) {
+                showError("Age must be a number.");
+            } catch (IllegalArgumentException ex) {
+                showError(ex.getMessage());
+            } catch (IllegalStateException ex) {
+                showError("Database error: " + ex.getMessage());
+            }
+        });
+
+        JButton backBtn = textButton("Back to Dashboard");
+        backBtn.addActionListener(e -> showScreen(SCREEN_ADMIN_DASHBOARD));
+
+        JPanel actions = new JPanel(new GridLayout(1, 2, 12, 0));
+        actions.setOpaque(false);
+        actions.add(createBtn);
+        actions.add(backBtn);
+
+        gbc.gridy = 8;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(20, 10, 8, 10);
+        card.add(actions, gbc);
+
+        form.add(card);
+        return form;
     }
 
     private JPanel buildUserDashboardScreen() {
@@ -468,7 +543,7 @@ public class BankSwingUI extends JFrame {
         wrapper.setBorder(new EmptyBorder(24, 24, 24, 24));
 
         JPanel header = makeCardPanel(new BorderLayout(), 0, 88);
-        JLabel title = new JLabel("Registered Accounts & Login Management", SwingConstants.LEFT);
+        JLabel title = new JLabel("Admin - Registered Accounts & Management", SwingConstants.LEFT);
         title.setForeground(TEXT_DARK);
         title.setFont(new Font("Segoe UI", Font.BOLD, 26));
 
@@ -488,7 +563,7 @@ public class BankSwingUI extends JFrame {
         tableCard.setBorder(new EmptyBorder(14, 14, 14, 14));
 
         adminTableModel = new DefaultTableModel(
-            new Object[] {"ID", "Username", "Holder", "Checking", "Savings", "Loan"}, 0
+            new Object[] {"ID", "Username", "Holder Name", "Checking", "Savings", "Loan"}, 0
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -504,7 +579,7 @@ public class BankSwingUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(adminTable);
         tableCard.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel actions = new JPanel(new GridLayout(1, 6, 10, 0));
+        JPanel actions = new JPanel(new GridLayout(1, 7, 10, 0));
         actions.setOpaque(false);
         actions.setBorder(new EmptyBorder(10, 0, 0, 0));
 
@@ -520,17 +595,17 @@ public class BankSwingUI extends JFrame {
         JButton totalBtn = textButton("Total Accounts");
         totalBtn.addActionListener(e -> showInfo("Total registered accounts: " + bankSystem.getTotalAccounts()));
 
-        JButton phpMyAdminBtn = textButton("Open phpMyAdmin");
-        phpMyAdminBtn.addActionListener(e -> openPhpMyAdmin());
-
         JButton logsBtn = textButton("View Login Logs");
         logsBtn.addActionListener(e -> showLoginLogs());
+
+        JButton createClientBtn = secondaryButton("Create Client Account");
+        createClientBtn.addActionListener(e -> showScreen(SCREEN_ADMIN_REGISTER));
 
         actions.add(refreshBtn);
         actions.add(detailsBtn);
         actions.add(deleteBtn);
+        actions.add(createClientBtn);
         actions.add(totalBtn);
-        actions.add(phpMyAdminBtn);
         actions.add(logsBtn);
 
         tableCard.add(actions, BorderLayout.SOUTH);
@@ -872,30 +947,6 @@ public class BankSwingUI extends JFrame {
 
     private void showInfo(String message) {
         JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void openPhpMyAdmin() {
-        try {
-            if (!Desktop.isDesktopSupported()) {
-                showError("Desktop browse is not supported on this machine.");
-                return;
-            }
-            Desktop.getDesktop().browse(URI.create(ACCOUNTS_TABLE_URL));
-        } catch (IOException | SecurityException ex) {
-            showError("Could not open phpMyAdmin. Make sure XAMPP Apache is running.\n" + ex.getMessage());
-        }
-    }
-
-    private void openAdminLocalhost() {
-        try {
-            if (!Desktop.isDesktopSupported()) {
-                showError("Desktop browse is not supported on this machine.");
-                return;
-            }
-            Desktop.getDesktop().browse(URI.create(ADMIN_LOCALHOST_URL));
-        } catch (IOException | SecurityException ex) {
-            showError("Could not open admin localhost.\n" + ex.getMessage());
-        }
     }
 
     @FunctionalInterface
