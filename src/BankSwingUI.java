@@ -388,7 +388,7 @@ public class BankSwingUI extends JFrame {
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
 
-        JPanel card = makeCardPanel(new GridBagLayout(), 700, 600);
+        JPanel card = makeCardPanel(new GridBagLayout(), 700, 670);
         GridBagConstraints gbc = baseGbc();
 
         JLabel title = sectionTitle("Create New Client Account");
@@ -442,8 +442,42 @@ public class BankSwingUI extends JFrame {
         gbc.gridy = 9;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
-        gbc.insets = new Insets(20, 10, 8, 10);
+        gbc.insets = new Insets(20, 10, 12, 10);
         card.add(actions, gbc);
+
+        // Link to login screen
+        JLabel alreadyHaveAccount = new JLabel("I already have an account");
+        alreadyHaveAccount.setForeground(ACCENT);
+        alreadyHaveAccount.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        alreadyHaveAccount.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        alreadyHaveAccount.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                showScreen(SCREEN_LOGIN);
+            }
+        });
+
+        JPanel linkPanel = new JPanel();
+        linkPanel.setOpaque(false);
+        linkPanel.add(alreadyHaveAccount);
+
+        gbc.gridy = 10;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 10, 12, 10);
+        card.add(linkPanel, gbc);
+
+        // Policies/Terms text
+        JLabel policiesLabel = new JLabel("<html><center>By creating an account, you agree to our Terms of Service<br/>and Privacy Policy. This system is secure and protected.</center></html>");
+        policiesLabel.setForeground(TEXT_LIGHT);
+        policiesLabel.setFont(new Font("Segoe UI", Font.PLAIN, 9));
+        policiesLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        gbc.gridy = 11;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 10, 8, 10);
+        card.add(policiesLabel, gbc);
 
         form.add(card);
         return form;
@@ -453,7 +487,7 @@ public class BankSwingUI extends JFrame {
         JPanel holder = new JPanel(new GridBagLayout());
         holder.setOpaque(false);
 
-        JPanel card = makeCardPanel(new GridBagLayout(), 620, 390);
+        JPanel card = makeCardPanel(new GridBagLayout(), 620, 480);
         GridBagConstraints gbc = baseGbc();
 
         JLabel title = sectionTitle("User Login");
@@ -497,8 +531,42 @@ public class BankSwingUI extends JFrame {
         gbc.gridy = 4;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
-        gbc.insets = new Insets(22, 10, 10, 10);
+        gbc.insets = new Insets(22, 10, 12, 10);
         card.add(actions, gbc);
+
+        // Link to register screen
+        JLabel dontHaveAccount = new JLabel("I don't have an account");
+        dontHaveAccount.setForeground(ACCENT);
+        dontHaveAccount.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        dontHaveAccount.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        dontHaveAccount.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                showScreen(SCREEN_REGISTER);
+            }
+        });
+
+        JPanel linkPanel = new JPanel();
+        linkPanel.setOpaque(false);
+        linkPanel.add(dontHaveAccount);
+
+        gbc.gridy = 5;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 10, 12, 10);
+        card.add(linkPanel, gbc);
+
+        // Policies/Terms text
+        JLabel policiesLabel = new JLabel("<html><center>Secure Banking System - All data encrypted and protected<br/>For assistance, please contact our support team.</center></html>");
+        policiesLabel.setForeground(TEXT_LIGHT);
+        policiesLabel.setFont(new Font("Segoe UI", Font.PLAIN, 9));
+        policiesLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        gbc.gridy = 6;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 10, 8, 10);
+        card.add(policiesLabel, gbc);
 
         holder.add(card);
         return holder;
