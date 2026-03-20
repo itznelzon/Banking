@@ -1,31 +1,39 @@
 CREATE DATABASE IF NOT EXISTS lawbank;
 USE lawbank;
 
-CREATE TABLE IF NOT EXISTS accounts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    account_holder VARCHAR(120) NOT NULL,
-    age INT NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    gmail VARCHAR(180) NOT NULL,
-    telephone VARCHAR(20) NOT NULL,
-    username VARCHAR(80) NOT NULL UNIQUE,
-    pin VARCHAR(255) NOT NULL,
-    checking_balance DOUBLE NOT NULL DEFAULT 0,
-    savings_balance DOUBLE NOT NULL DEFAULT 0,
-    loan_amount DOUBLE NOT NULL DEFAULT 0
-);
+DROP PROCEDURE IF EXISTS initialize_lawbank_schema;
+DELIMITER $$
+CREATE PROCEDURE initialize_lawbank_schema()
+BEGIN
+    CREATE TABLE IF NOT EXISTS accounts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        account_holder VARCHAR(120) NOT NULL,
+        age INT NOT NULL,
+        address VARCHAR(255) NOT NULL,
+        gmail VARCHAR(180) NOT NULL,
+        telephone VARCHAR(20) NOT NULL,
+        username VARCHAR(80) NOT NULL UNIQUE,
+        pin VARCHAR(255) NOT NULL,
+        checking_balance DOUBLE NOT NULL DEFAULT 0,
+        savings_balance DOUBLE NOT NULL DEFAULT 0,
+        loan_amount DOUBLE NOT NULL DEFAULT 0
+    );
 
-CREATE TABLE IF NOT EXISTS admins (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(80) NOT NULL UNIQUE,
-    password VARCHAR(120) NOT NULL
-);
+    CREATE TABLE IF NOT EXISTS admins (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(80) NOT NULL UNIQUE,
+        password VARCHAR(120) NOT NULL
+    );
 
-CREATE TABLE IF NOT EXISTS login_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    role VARCHAR(20) NOT NULL,
-    username VARCHAR(80) NOT NULL,
-    success BOOLEAN NOT NULL,
-    notes VARCHAR(255),
-    logged_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+    CREATE TABLE IF NOT EXISTS login_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        role VARCHAR(20) NOT NULL,
+        username VARCHAR(80) NOT NULL,
+        success BOOLEAN NOT NULL,
+        notes VARCHAR(255),
+        logged_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+END$$
+DELIMITER ;
+
+CALL initialize_lawbank_schema();

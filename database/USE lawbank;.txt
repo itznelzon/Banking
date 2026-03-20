@@ -1,0 +1,2 @@
+USE lawbank;
+CALL initialize_lawbank_schema();
