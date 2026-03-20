@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+
 public class BankSystem {
     private final List<Bank> allAccounts;
     private final InputValidator validator;
