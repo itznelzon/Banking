@@ -38,15 +38,15 @@ public class BankSwingUI extends JFrame {
     private static final String SCREEN_USER_DASHBOARD = "userDashboard";
     private static final String SCREEN_ADMIN_DASHBOARD = "adminDashboard";
 
-    // Modern Color Palette
-    private static final Color PRIMARY = new Color(25, 103, 210);        // Modern Blue
-    private static final Color PRIMARY_DARK = new Color(13, 71, 161);    // Dark Blue
-    private static final Color ACCENT = new Color(255, 179, 64);         // Modern Orange-Gold
-    private static final Color SOFT_BG = new Color(240, 245, 250);       // Light Blue
-    private static final Color CARD_BG = new Color(255, 255, 255, 245);  // Pure White
-    private static final Color TEXT_DARK = new Color(25, 32, 45);        // Dark Text
-    private static final Color TEXT_LIGHT = new Color(100, 110, 130);    // Light Text
-    private static final Color BORDER_COLOR = new Color(224, 230, 240);  // Light Border
+    // Land Bank Professional Color Palette - Dark Green & Gold
+    private static final Color PRIMARY = new Color(0, 102, 64);          // Land Bank Dark Green
+    private static final Color PRIMARY_DARK = new Color(0, 77, 48);      // Darker Green
+    private static final Color ACCENT = new Color(212, 175, 55);         // Elegant Gold
+    private static final Color SOFT_BG = new Color(244, 249, 246);       // Light Greenish-White
+    private static final Color CARD_BG = new Color(255, 255, 255, 248);  // Pure White
+    private static final Color TEXT_DARK = new Color(20, 35, 28);        // Dark Forest Green
+    private static final Color TEXT_LIGHT = new Color(90, 105, 95);      // Muted Green-Gray
+    private static final Color BORDER_COLOR = new Color(200, 220, 210);  // Light Green Border
 
     private final BankSystem bankSystem;
     private final InputValidator validator;
@@ -1031,10 +1031,10 @@ public class BankSwingUI extends JFrame {
             GradientPaint gp = new GradientPaint(
                 0,
                 0,
-                new Color(224, 241, 247),
+                new Color(240, 248, 244),
                 w,
                 h,
-                new Color(252, 247, 232)
+                new Color(253, 250, 242)
             );
             g2.setPaint(gp);
             g2.fillRect(0, 0, w, h);
