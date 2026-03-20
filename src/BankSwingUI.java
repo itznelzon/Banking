@@ -31,6 +31,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class BankSwingUI extends JFrame {
     private static final String SCREEN_WELCOME = "welcome";
+    private static final String SCREEN_UNIFIED_AUTH = "unifiedAuth";
     private static final String SCREEN_REGISTER = "register";
     private static final String SCREEN_LOGIN = "login";
     private static final String SCREEN_ADMIN_LOGIN = "adminLogin";
@@ -99,6 +100,7 @@ public class BankSwingUI extends JFrame {
         cards.setOpaque(false);
 
         cards.add(buildWelcomeScreen(), SCREEN_WELCOME);
+        cards.add(buildUnifiedAuthScreen(), SCREEN_UNIFIED_AUTH);
         cards.add(buildRegisterScreen(), SCREEN_REGISTER);
         cards.add(buildLoginScreen(), SCREEN_LOGIN);
         cards.add(buildAdminLoginScreen(), SCREEN_ADMIN_LOGIN);
@@ -154,13 +156,13 @@ public class BankSwingUI extends JFrame {
         highlight.setForeground(ACCENT);
 
         JButton registerBtn = primaryButton("Create Account");
-        registerBtn.addActionListener(e -> showScreen(SCREEN_REGISTER));
+        registerBtn.addActionListener(e -> showScreen(SCREEN_UNIFIED_AUTH));
 
         JButton loginBtn = primaryButton("Log In Account");
-        loginBtn.addActionListener(e -> showScreen(SCREEN_LOGIN));
+        loginBtn.addActionListener(e -> showScreen(SCREEN_UNIFIED_AUTH));
 
         JButton adminBtn = secondaryButton("Admin Access");
-        adminBtn.addActionListener(e -> showScreen(SCREEN_ADMIN_LOGIN));
+        adminBtn.addActionListener(e -> showScreen(SCREEN_UNIFIED_AUTH));
 
         gbc.insets = new Insets(20, 20, 8, 20);
         gbc.gridy = 0;
@@ -193,6 +195,197 @@ public class BankSwingUI extends JFrame {
 
         content.add(card);
         return content;
+    }
+
+    private JPanel buildUnifiedAuthScreen() {
+        JPanel main = new JPanel(new BorderLayout());
+        main.setOpaque(false);
+
+        // Scrollable container for all three auth sections
+        JPanel scrollContent = new JPanel();
+        scrollContent.setLayout(new javax.swing.BoxLayout(scrollContent, javax.swing.BoxLayout.Y_AXIS));
+        scrollContent.setOpaque(false);
+
+        int sectionWidth = 650;
+
+        // ============ REGISTER SECTION ============
+        JPanel registerSection = makeCardPanel(new GridBagLayout(), sectionWidth, 400);
+        GridBagConstraints gbc = baseGbc();
+
+        JLabel regTitle = sectionTitle("📝 Create New Account");
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 0, 12, 0);
+        registerSection.add(regTitle, gbc);
+
+        gbc.gridwidth = 1;
+        regNameField = new JTextField();
+        regAgeField = new JTextField();
+        regAddressField = new JTextField();
+        regGmailField = new JTextField();
+        regTelephoneField = new JTextField();
+        regUsernameField = new JTextField();
+        regPinField = new JPasswordField();
+
+        addFormRow(registerSection, gbc, 1, "Full Name", regNameField);
+        addFormRow(registerSection, gbc, 2, "Age", regAgeField);
+        addFormRow(registerSection, gbc, 3, "Address", regAddressField);
+        addFormRow(registerSection, gbc, 4, "Gmail", regGmailField);
+        addFormRow(registerSection, gbc, 5, "Telephone", regTelephoneField);
+        addFormRow(registerSection, gbc, 6, "Username", regUsernameField);
+        addFormRow(registerSection, gbc, 7, "6-digit PIN", regPinField);
+
+        char regPinMask = regPinField.getEchoChar();
+        JCheckBox showRegPin = new JCheckBox("Show PIN");
+        showRegPin.setOpaque(false);
+        showRegPin.setForeground(PRIMARY_DARK);
+        showRegPin.addActionListener(e -> regPinField.setEchoChar(showRegPin.isSelected() ? (char) 0 : regPinMask));
+
+        gbc.gridy = 8;
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(2, 0, 8, 0);
+        registerSection.add(showRegPin, gbc);
+
+        JButton regBtn = primaryButton("Register");
+        regBtn.addActionListener(e -> handleRegister());
+
+        gbc.gridy = 9;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(12, 0, 0, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        registerSection.add(regBtn, gbc);
+
+        // ============ LOGIN SECTION ============
+        JPanel loginSection = makeCardPanel(new GridBagLayout(), sectionWidth, 280);
+        gbc = baseGbc();
+
+        JLabel loginTitle = sectionTitle("🔐 User Login");
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 0, 12, 0);
+        loginSection.add(loginTitle, gbc);
+
+        gbc.gridwidth = 1;
+        loginUsernameField = new JTextField();
+        loginPinField = new JPasswordField();
+
+        addFormRow(loginSection, gbc, 1, "Username", loginUsernameField);
+        addFormRow(loginSection, gbc, 2, "PIN", loginPinField);
+
+        char loginPinMask = loginPinField.getEchoChar();
+        JCheckBox showLoginPin = new JCheckBox("Show PIN");
+        showLoginPin.setOpaque(false);
+        showLoginPin.setForeground(PRIMARY_DARK);
+        showLoginPin.addActionListener(e -> loginPinField.setEchoChar(showLoginPin.isSelected() ? (char) 0 : loginPinMask));
+
+        gbc.gridy = 3;
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(2, 0, 8, 0);
+        loginSection.add(showLoginPin, gbc);
+
+        JButton loginBtn = primaryButton("Login");
+        loginBtn.addActionListener(e -> handleUserLogin());
+
+        gbc.gridy = 4;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(12, 0, 0, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        loginSection.add(loginBtn, gbc);
+
+        // ============ ADMIN LOGIN SECTION ============
+        JPanel adminSection = makeCardPanel(new GridBagLayout(), sectionWidth, 280);
+        gbc = baseGbc();
+
+        JLabel adminTitle = sectionTitle("🛡️ Admin Access");
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 0, 12, 0);
+        adminSection.add(adminTitle, gbc);
+
+        gbc.gridwidth = 1;
+        adminUsernameField = new JTextField();
+        adminPasswordField = new JPasswordField();
+
+        addFormRow(adminSection, gbc, 1, "Admin Username", adminUsernameField);
+        addFormRow(adminSection, gbc, 2, "Admin Password", adminPasswordField);
+
+        char adminPwMask = adminPasswordField.getEchoChar();
+        JCheckBox showAdminPw = new JCheckBox("Show Password");
+        showAdminPw.setOpaque(false);
+        showAdminPw.setForeground(PRIMARY_DARK);
+        showAdminPw.addActionListener(e -> adminPasswordField.setEchoChar(showAdminPw.isSelected() ? (char) 0 : adminPwMask));
+
+        gbc.gridy = 3;
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(2, 0, 8, 0);
+        adminSection.add(showAdminPw, gbc);
+
+        JButton adminLoginBtn = secondaryButton("Open Admin Panel");
+        adminLoginBtn.addActionListener(e -> handleAdminLogin());
+
+        gbc.gridy = 4;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(12, 0, 0, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        adminSection.add(adminLoginBtn, gbc);
+
+        // ============ ADD ALL SECTIONS TO SCROLL ============
+        JPanel spacer1 = new JPanel();
+        spacer1.setOpaque(false);
+        spacer1.setMaximumSize(new Dimension(sectionWidth, 16));
+
+        JPanel spacer2 = new JPanel();
+        spacer2.setOpaque(false);
+        spacer2.setMaximumSize(new Dimension(sectionWidth, 16));
+
+        scrollContent.add(javax.swing.Box.createVerticalStrut(8));
+        scrollContent.add(registerSection);
+        scrollContent.add(spacer1);
+        scrollContent.add(loginSection);
+        scrollContent.add(spacer2);
+        scrollContent.add(adminSection);
+        scrollContent.add(javax.swing.Box.createVerticalGlue());
+
+        JScrollPane scrollPane = new JScrollPane(scrollContent);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        main.add(scrollPane, BorderLayout.CENTER);
+
+        // Back button
+        JButton backBtn = textButton("Back to Home");
+        backBtn.addActionListener(e -> showScreen(SCREEN_WELCOME));
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setOpaque(false);
+        bottomPanel.add(backBtn);
+
+        main.add(bottomPanel, BorderLayout.SOUTH);
+
+        JPanel container = new JPanel(new GridBagLayout());
+        container.setOpaque(false);
+
+        GridBagConstraints ct = new GridBagConstraints();
+        ct.gridx = 0;
+        ct.gridy = 0;
+        ct.fill = GridBagConstraints.BOTH;
+        ct.weightx = 1;
+        ct.weighty = 1;
+        ct.insets = new Insets(20, 20, 20, 20);
+
+        container.add(main, ct);
+        return container;
     }
 
     private JPanel buildRegisterScreen() {
