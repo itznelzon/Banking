@@ -582,7 +582,7 @@ public class BankSwingUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(adminTable);
         tableCard.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel actions = new JPanel(new GridLayout(1, 7, 10, 0));
+        JPanel actions = new JPanel(new GridLayout(1, 6, 10, 0));
         actions.setOpaque(false);
         actions.setBorder(new EmptyBorder(10, 0, 0, 0));
 
@@ -601,13 +601,9 @@ public class BankSwingUI extends JFrame {
         JButton logsBtn = textButton("View Login Logs");
         logsBtn.addActionListener(e -> showLoginLogs());
 
-        JButton createClientBtn = secondaryButton("Create Client Account");
-        createClientBtn.addActionListener(e -> showScreen(SCREEN_ADMIN_REGISTER));
-
         actions.add(refreshBtn);
         actions.add(detailsBtn);
         actions.add(deleteBtn);
-        actions.add(createClientBtn);
         actions.add(totalBtn);
         actions.add(logsBtn);
 
