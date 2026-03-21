@@ -35,8 +35,7 @@ BEGIN
     );
 
     CREATE TABLE IF NOT EXISTS transactions (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        account_id INT NOT NULL,
+        account_id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(80) NOT NULL,
         transaction_type VARCHAR(50) NOT NULL,
         amount DOUBLE NOT NULL,
